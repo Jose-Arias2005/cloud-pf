@@ -7,22 +7,6 @@ def lambda_handler(event, context):
     t_usuarios = dynamodb.Table('t_usuarios')  # Tabla de usuarios
     t_cines = dynamodb.Table('t_cines')  # Tabla de cines
 
-    # Verificar si el user_id está presente en la solicitud
-    user_id = event.get('user_id')
-    if not user_id:
-        return {
-            'statusCode': 400,
-            'body': json.dumps({'error': 'user_id is required'})
-        }
-
-    try:
-        # Consultar rol del usuario
-        user_response = t_usuarios.get_item(Key={'user_id': user_id})
-        if 'Item' not in user_response or user_response['Item'].get('role') != 'admin':
-            return {
-                'statusCode': 403,
-                'body': json.dumps({'error': 'Permission denied'})
-            }
 
         # Obtener datos de la proyección desde la solicitud
         cinema_id = event.get('cinema_id')
