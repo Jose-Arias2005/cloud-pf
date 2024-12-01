@@ -10,15 +10,16 @@ def lambda_handler(event, context):
         t_cines = dynamodb.Table('t_cines')  # Tabla de cines
 
         # Obtener datos de la proyección desde la solicitud
-        cinema_id = event.get('cinema_id')
-        cinema_name = event.get('cinema_name')
-        show_id = event.get('show_id')
-        title = event.get('title')
-        hall = event.get('hall')
-        seats_available = event.get(50) 
-        date = event.get('date')
-        start_time = event.get('start_time')
-        end_time = event.get('end_time')
+        body = json.loads(event['body'])  # Asegúrate de usar event['body'] para obtener el contenido del body
+        cinema_id = body.get('cinema_id')
+        cinema_name = body.get('cinema_name')
+        show_id = body.get('show_id')
+        title = body.get('title')
+        hall = body.get('hall')
+        seats_available = body.get('seats_available', 50)  # Usar 50 si no se proporciona el valor
+        date = body.get('date')
+        start_time = body.get('start_time')
+        end_time = body.get('end_time')
 
         # Verificar campos obligatorios
         requiredFields = ['cinema_id', 'cinema_name', 'show_id', 'title', 'hall', 'date', 'start_time', 'end_time']
@@ -28,7 +29,6 @@ def lambda_handler(event, context):
                 'statusCode': 400,
                 'body': json.dumps({'error': f'Missing required fields: {", ".join(missing_fields)}'})
             }
-
 
         # Verificar si el cine existe
         cinema_response = t_cines.get_item(Key={'cinema_id': cinema_id, 'cinema_name': cinema_name})
