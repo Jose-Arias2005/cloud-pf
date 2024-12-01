@@ -34,23 +34,15 @@ functions:
           cors: true
           integration: lambda
 
-  GetCineDetails:
-    handler: GetCineDetails.lambda_handler
-    events:
-      - http:
-          path: /cine/consultar
-          method: get
-          cors: true
-          integration: lambda
-
   ListAllCines:
     handler: ListAllCines.lambda_handler
     events:
       - http:
           path: /cine/listar
-          method: get
+          method: post  # Cambiado a POST
           cors: true
           integration: lambda
+
   
   UpdateCine:
     handler: UpdateCine.lambda_handler
