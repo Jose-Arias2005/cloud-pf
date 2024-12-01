@@ -40,10 +40,13 @@ def lambda_handler(event, context):
             }
             cinema_list.append(cinema_data)
 
+        # Imprimir el resultado de la consulta para depuración
+        print("Cines encontrados:", json.dumps(cinema_list, indent=4))
+
         # Responder con la lista de cines
         return {
             'statusCode': 200,
-            'body': json.dumps(cinema_list)
+            'body': json.dumps(cinema_list, indent=4)
         }
 
     except Exception as e:
