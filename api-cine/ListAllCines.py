@@ -30,24 +30,6 @@ def lambda_handler(event, context):
                 'body': json.dumps({'error': 'No cines encontrados'})
             }
 
-        # Construir la lista de cines con detalles básicos
-        cinema_list = []
-        for cinema in response['Items']:
-            cinema_data = {
-                'cinema_id': cinema['cinema_id'],
-                'cinema_name': cinema['cinema_name'],
-                'address': cinema['address'],
-            }
-            cinema_list.append(cinema_data)
-
-        # Imprimir el resultado de la consulta para depuración
-        print("Cines encontrados:", json.dumps(cinema_list, indent=4))
-
-        # Responder con la lista de cines
-        return {
-            'statusCode': 200,
-            'body': json.dumps(cinema_list, indent=4)
-        }
 
     except Exception as e:
         print("Exception:", str(e))
