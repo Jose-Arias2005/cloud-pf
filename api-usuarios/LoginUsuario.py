@@ -10,7 +10,7 @@ def hash_password(password):
 
 # Función para generar un token de acceso único (UUID)
 def generate_token():
-    return str(uuid.uuid4())  # Generamos un UUID único
+    return str(uuid.uuid4())  # Generamos un UUID único para el token
 
 def lambda_handler(event, context):
     try:
@@ -76,18 +76,22 @@ def lambda_handler(event, context):
         # Generar un token de acceso único
         token = generate_token()
 
-        # Conectar a la tabla t_token_acceso (corrige el nombre aquí)
+        # Generar un token_id único (esto es necesario ya que tu tabla espera token_id)
+        token_id = str(uuid.uuid4())  # Generamos un UUID único para el token_id
+
+        # Conectar a la tabla t_token_acceso
         tokens_table = dynamodb.Table('t_token_acceso')  # Asegúrate de usar el nombre correcto
 
         # Expiración del token: 1 hora
         expiration_time = (datetime.datetime.utcnow() + datetime.timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')  # Expiración en 1 hora
 
-        # Almacenar el token en la tabla t_token_acceso
+        # Almacenar el token en la tabla t_token_acceso con la fecha de expiración
         tokens_table.put_item(
             Item={
-                'token': token,         # El token generado
-                'user_id': user_id,     # ID del usuario
-                'cinema_id': cinema_id, # ID del cine
+                'token_id': token_id,     # ID único para el token
+                'token': token,           # El token generado
+                'user_id': user_id,       # ID del usuario
+                'cinema_id': cinema_id,   # ID del cine
                 'expira_en': expiration_time  # Fecha de expiración del token
             }
         )
