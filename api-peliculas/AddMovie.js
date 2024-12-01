@@ -9,6 +9,9 @@ exports.lambda_handler = async (event) => {
             body = JSON.parse(body); // Si es una cadena, parsearlo
         }
 
+
+
+        
         const { user_id, cinema_id, title, genre, duration, rating } = body;
 
         // Validar entrada
