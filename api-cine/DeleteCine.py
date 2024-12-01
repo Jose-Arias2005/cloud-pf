@@ -17,17 +17,22 @@ def lambda_handler(event, context):
                 'body': json.dumps({'error': 'Invalid JSON in body'})
             }
 
-    # Obtener user_id desde el cuerpo del evento
+    # Obtener user_id y cinema_id desde el cuerpo del evento
     user_id = body.get('user_id')
-    if not user_id:
+    cinema_id = body.get('cinema_id')
+
+    if not user_id or not cinema_id:
         return {
             'statusCode': 400,
-            'body': json.dumps({'error': 'user_id is required'})
+            'body': json.dumps({'error': 'user_id and cinema_id are required'})
         }
-    
+
     # Consultar el rol del usuario
     try:
-        user_response = t_usuarios.get_item(Key={'user_id': user_id})  # Verificar si la tabla usa solo user_id
+        # Usar tanto cinema_id como user_id en la consulta
+        user_response = t_usuarios.get_item(
+            Key={'cinema_id': cinema_id, 'user_id': user_id}  # Consulta por clave primaria compuesta
+        )
     except Exception as e:
         return {
             'statusCode': 500,
@@ -50,14 +55,13 @@ def lambda_handler(event, context):
         }
 
     # Obtener cinema_id y cinema_name directamente del evento
-    cinema_id = body.get('cinema_id')
     cinema_name = body.get('cinema_name')
     
     # Validación de entrada
-    if not cinema_id or not cinema_name:
+    if not cinema_name:
         return {
             'statusCode': 400,
-            'body': json.dumps({'error': 'cinema_id and cinema_name are required'})
+            'body': json.dumps({'error': 'cinema_name is required'})
         }
 
     # Verificar si el cine existe antes de eliminar
