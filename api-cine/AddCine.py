@@ -21,32 +21,12 @@ def lambda_handler(event, context):
 
     print("Cuerpo decodificado:", body)  # Depuración del cuerpo
 
-    # Obtener user_id y cinema_id
-    user_id = body.get('user_id')
     cinema_id = body.get('cinema_id')
 
-    if not user_id or not cinema_id:
+    if not cinema_id:
         return {
             'statusCode': 400,
-            'body': json.dumps({'error': 'user_id and cinema_id are required'})
-        }
-
-    # Consultar el rol del usuario
-    user_response = t_usuarios.get_item(Key={'cinema_id': cinema_id, 'user_id': user_id})
-    print("Respuesta del usuario:", user_response)  # Depuración de la respuesta de DynamoDB
-    
-    if 'Item' not in user_response or 'role' not in user_response['Item']:
-        return {
-            'statusCode': 403,
-            'body': json.dumps({'error': 'User not found or role not defined'})
-        }
-
-    role = user_response['Item']['role']
-    
-    if role != 'admin':
-        return {
-            'statusCode': 403,
-            'body': json.dumps({'error': 'Permission denied'})
+            'body': json.dumps({'error': 'cinema_id are required'})
         }
 
     # Continuar con la creación del cine
