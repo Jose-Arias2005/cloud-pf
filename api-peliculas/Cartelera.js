@@ -1,10 +1,12 @@
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-exports.handler = async (event) => {
+exports.lambda_handler = async (event) => {
     try {
-        // Obtener el cinema_id desde la solicitud
-        const cinema_id = event.pathParameters.cinema_id;
+        // Obtener el cinema_id desde el cuerpo de la solicitud (body)
+        const body = JSON.parse(event.body);
+        const cinema_id = body.cinema_id;
+        
         if (!cinema_id) {
             return {
                 statusCode: 400,
