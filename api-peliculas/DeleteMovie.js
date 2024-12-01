@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-exports.handler = async (event) => {
+exports.lambda_handler = async (event) => {
     try {
         const body = JSON.parse(event.body); // Parsear el body de la solicitud
         const { title, cinema_id } = body;
