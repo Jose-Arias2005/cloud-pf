@@ -43,7 +43,7 @@ def lambda_handler(event, context):
 
         # Verificar si la proyección existe
         existing_function = t_proyecciones.get_item(
-            Key={'cinema_id': cinema_id, 'cinema_name': cinema_name}
+            Key={'cinema_id': cinema_id, 'cinema_name': cinema_name, 'show:id': show_id}
         )
 
         if 'Item' in existing_function:
