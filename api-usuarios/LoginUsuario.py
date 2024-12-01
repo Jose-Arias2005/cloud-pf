@@ -1,30 +1,10 @@
 import boto3
 import hashlib
 import json
-import jwt  # Necesitas instalar la librería pyjwt: 'pip install pyjwt'
-import datetime
-import uuid  # Para generar un ID único para cada token
 
-# Función para hashear la contraseña (mejor usar algo más seguro como bcrypt en producción)
 def hash_password(password):
+    # Hashear la contraseña con SHA256 (en producción sería mejor usar algo más robusto como bcrypt)
     return hashlib.sha256(password.encode()).hexdigest()
-
-# Función para generar un token JWT
-def generate_jwt_token(user_id, cinema_id):
-    # Definir la clave secreta (debe estar segura y no debe ser pública)
-    secret_key = 'mi_clave_secreta'  # Usa una clave segura en producción
-    expiration_time = datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Expira en 1 hora
-
-    # Crear el payload del token
-    payload = {
-        'user_id': user_id,
-        'cinema_id': cinema_id,
-        'exp': expiration_time  # Fecha de expiración
-    }
-
-    # Generar el token JWT
-    token = jwt.encode(payload, secret_key, algorithm='HS256')
-    return token
 
 def lambda_handler(event, context):
     try:
@@ -79,7 +59,7 @@ def lambda_handler(event, context):
         stored_password = response['Item'].get('password')
 
         # Verificar si la contraseña proporcionada coincide con la almacenada
-        if hash_password(password) != stored_password:
+        if stored_password != hash_password(password):
             return {
                 'statusCode': 401,
                 'body': json.dumps({
@@ -87,40 +67,20 @@ def lambda_handler(event, context):
                 })
             }
 
-        # Generar el token JWT
-        token = generate_jwt_token(user_id, cinema_id)
-
-        # Generar un ID único para el token
-        token_id = str(uuid.uuid4())  # Generar un token_id único
-
-        # Conectar a la tabla t_tokens_acceso para guardar el token generado
-        tokens_table = dynamodb.Table('t_tokens_acceso')
-
-        # Almacenar el token en DynamoDB
-        tokens_table.put_item(
-            Item={
-                'token_id': token_id,  # ID único del token
-                'token': token,        # El token JWT generado
-                'user_id': user_id,    # ID del usuario
-                'cinema_id': cinema_id, # ID del cine
-                'expira_en': str(datetime.datetime.utcnow() + datetime.timedelta(hours=1))  # Fecha de expiración
-            }
-        )
-
-        # Devolver el token al usuario
+        # Respuesta exitosa
         return {
             'statusCode': 200,
             'body': json.dumps({
                 'message': 'Login exitoso',
-                'token': token  # El token JWT que el usuario utilizará
+                'role': response['Item'].get('role')
             })
         }
 
     except Exception as e:
-        # Capturar cualquier error inesperado
+        # Manejo de errores
         return {
             'statusCode': 500,
             'body': json.dumps({
-                'error': str(e)
+                'error': f'Ocurrió un error: {str(e)}'
             })
         }
