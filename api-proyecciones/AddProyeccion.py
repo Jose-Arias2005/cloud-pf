@@ -41,17 +41,6 @@ def lambda_handler(event, context):
                 'body': json.dumps({'error': 'Cinema not found'})
             }
 
-        # Verificar si la proyección existe
-        existing_function = t_proyecciones.get_item(
-            Key={'cinema_id': cinema_id, 'cinema_name': cinema_name, 'show_id': show_id}
-        )
-
-        if 'Item' in existing_function:
-            return {
-                'statusCode': 409,
-                'body': json.dumps({'error': 'Projection already exists'})
-            }
-
         # Agregar nueva proyección a DynamoDB
         t_proyecciones.put_item(
             Item={
