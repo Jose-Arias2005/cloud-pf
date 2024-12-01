@@ -9,26 +9,24 @@ def lambda_handler(event, context):
         t_usuarios = dynamodb.Table('t_usuarios')  # Tabla de usuarios
         t_cines = dynamodb.Table('t_cines')  # Tabla de cines
 
-        # Obtener los datos del cuerpo de la solicitud
-        body = event['body']  # Usar event['body'] directamente ya que se pasa como un diccionario o JSON válido
-        # Si el body es un string, entonces parsearlo
+        # Obtener datos de la proyección desde la solicitud
+        body = event.get('body')
         if isinstance(body, str):
             body = json.loads(body)
 
-        # Obtener los datos de la proyección
         cinema_id = body.get('cinema_id')
         cinema_name = body.get('cinema_name')
         show_id = body.get('show_id')
         title = body.get('title')
         hall = body.get('hall')
-        seats_available = body.get('seats_available', 50)  # Default 50
+        seats_available = body.get('seats_available', 50)  # Valor predeterminado: 50
         date = body.get('date')
         start_time = body.get('start_time')
         end_time = body.get('end_time')
 
-        # Validar campos obligatorios
-        requiredFields = ['cinema_id', 'cinema_name', 'show_id', 'title', 'hall', 'date', 'start_time', 'end_time']
-        missing_fields = [field for field in requiredFields if not body.get(field)]
+        # Verificar campos obligatorios
+        required_fields = ['cinema_id', 'cinema_name', 'show_id', 'title', 'hall', 'date', 'start_time', 'end_time']
+        missing_fields = [field for field in required_fields if not body.get(field)]
         if missing_fields:
             return {
                 'statusCode': 400,
@@ -44,7 +42,10 @@ def lambda_handler(event, context):
             }
 
         # Verificar si la proyección existe
-        existing_function = t_proyecciones.get_item(Key={'cinema_id': cinema_id, 'cinema_name': cinema_name, 'show_id': show_id})
+        existing_function = t_proyecciones.get_item(
+            Key={'cinema_id': cinema_id, 'cinema_name': cinema_name}
+        )
+
         if 'Item' in existing_function:
             return {
                 'statusCode': 409,
