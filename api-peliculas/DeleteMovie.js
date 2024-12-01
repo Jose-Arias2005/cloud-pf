@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-exports.lambda_handler = async (event) => {
+exports.lambda_handler = async (event) => {  // Cambié de 'handler' a 'lambda_handler'
     try {
         const body = JSON.parse(event.body); // Parsear el body de la solicitud
         const { title, cinema_id } = body;
@@ -15,7 +15,6 @@ exports.lambda_handler = async (event) => {
                 };
             }
         }
-
 
         // Eliminar la película (utilizando cinema_id y title como claves)
         const t_peliculas = process.env.TABLE_NAME_PELICULAS;
