@@ -11,12 +11,11 @@ exports.handler = async (event) => {
         for (let field of requiredFields) {
             if (!body[field]) {
                 return {
-                statusCode: 400,
-                body: JSON.stringify({ error: Falta el campo obligatorio: ${field} }),
+                    statusCode: 400,
+                    body: JSON.stringify({ error: `Falta el campo obligatorio: ${field}` }),
                 };
             }
         }
-        
 
         // Conectar a la tabla de usuarios
         const t_usuarios = process.env.TABLE_NAME_USUARIOS;
