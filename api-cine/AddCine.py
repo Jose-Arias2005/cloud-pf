@@ -6,6 +6,19 @@ def lambda_handler(event, context):
     t_cines = dynamodb.Table('t_cines')
     t_usuarios = dynamodb.Table('t_usuarios')
     
+    # Depuración: Imprime el evento recibido para ver su estructura
+    print("Evento recibido:", json.dumps(event))
+
+    # Si el evento tiene un body, cargarlo correctamente
+    if 'body' in event:
+        try:
+            event = json.loads(event['body'])  # Asegúrate de que body sea un diccionario
+        except json.JSONDecodeError:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'error': 'Invalid body format'})
+            }
+
     # Obtener user_id
     user_id = event.get('user_id')
     if not user_id:
@@ -50,17 +63,18 @@ def lambda_handler(event, context):
             'body': json.dumps({'error': 'Cinema already exists in this district'})
         }
     
-    # Agregar el nuevo cine
+    # Agregar el cine a DynamoDB
     t_cines.put_item(
         Item={
             'cinema_id': cinema_id,
-            'cinema_name': cinema_name, # NOMBRE AV O DISTRITO
+            'cinema_name': cinema_name,
             'address': address,
-            'number_of_halls': number_of_halls
+            'number_of_halls': number_of_halls,
+            'created_at': str(int(time.time()))  # Timestamp de creación
         }
     )
-
+    
     return {
-        'statusCode': 201,
-        'body': json.dumps({'message': 'Cinema added successfully'})
+        'statusCode': 200,
+        'body': json.dumps({'message': 'Cinema created successfully'})
     }
