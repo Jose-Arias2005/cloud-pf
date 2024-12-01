@@ -31,18 +31,12 @@ def lambda_handler(event, context):
         }
 
     # Buscar el usuario en la tabla 't_usuarios' usando la clave primaria compuesta
-    try:
-        user_response = t_usuarios.get_item(
-            Key={
-                'cinema_id': cinema_id,  # Clave de partición
-                'user_id': user_id       # Clave de ordenación
-            }
-        )
-    except Exception as e:
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': f'Error accessing DynamoDB: {str(e)}'})
+    user_response = t_usuarios.get_item(
+        Key={
+            'cinema_id': cinema_id,  # Clave de partición
+            'user_id': user_id       # Clave de ordenación
         }
+    )
 
     # Verificar si el usuario fue encontrado
     if 'Item' not in user_response:
@@ -80,7 +74,12 @@ def lambda_handler(event, context):
         }
 
     # Verificar si el cine ya existe
-    existing_cinema = t_cines.get_item(Key={'cinema_id': cinema_id})
+    existing_cinema = t_cines.get_item(
+        Key={
+            'cinema_id': cinema_id,         # Clave de partición
+            'cinema_name': cinema_name      # Clave de ordenación
+        }
+    )
     if 'Item' in existing_cinema:
         return {
             'statusCode': 409,
@@ -88,20 +87,14 @@ def lambda_handler(event, context):
         }
 
     # Agregar el cine a la tabla 't_cines'
-    try:
-        t_cines.put_item(
-            Item={
-                'cinema_id': cinema_id,
-                'cinema_name': cinema_name,
-                'address': address,
-                'number_of_halls': number_of_halls
-            }
-        )
-    except Exception as e:
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': f'Error adding cinema: {str(e)}'})
+    t_cines.put_item(
+        Item={
+            'cinema_id': cinema_id,
+            'cinema_name': cinema_name,
+            'address': address,
+            'number_of_halls': number_of_halls
         }
+    )
 
     return {
         'statusCode': 200,
