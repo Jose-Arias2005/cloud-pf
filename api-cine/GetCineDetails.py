@@ -1,43 +1,50 @@
-import boto3
+import boto3  # import Boto3
 import json
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key  # import Boto3 conditions
 
 def lambda_handler(event, context):
     try:
-        # Obtener cinema_id y cinema_name desde el cuerpo de la solicitud
+        # Obtener cinema_id y sala_id desde el cuerpo de la solicitud
         body = event.get('body')
         if isinstance(body, str):  # Si el body es un string, decodificarlo
             body = json.loads(body)
 
-        cinema_id = body.get('cinema_id')
-        cinema_name = body.get('cinema_name')
+        cinema_id = body.get('cinema_id')  # Obtener cinema_id
+        sala_id = body.get('sala_id')  # Obtener sala_id
 
-        if not cinema_id or not cinema_name:
+        if not cinema_id or not sala_id:
             return {
                 'statusCode': 400,
-                'body': json.dumps({'error': 'Missing cinema_id or cinema_name in the request'})
+                'body': json.dumps({'error': 'Missing cinema_id or sala_id in the request'})
             }
 
-        # Conectar con DynamoDB
+        # Conectar a DynamoDB
         dynamodb = boto3.resource('dynamodb')
-        t_cines = dynamodb.Table('t_cines')  # Nombre de la tabla
-
-        # Consultar en la tabla principal con cinema_id y cinema_name como claves
-        response = t_cines.query(
-            KeyConditionExpression=Key('cinema_id').eq(cinema_id) & Key('cinema_name').eq(cinema_name)
+        t_salas = dynamodb.Table('t_salas')  # Nombre de la tabla de las salas
+        
+        # Consultar en la tabla principal con cinema_id y sala_id como claves
+        response = t_salas.query(
+            KeyConditionExpression=Key('cinema_id').eq(cinema_id) & Key('sala_id').eq(sala_id)
         )
 
         # Verificar si hay resultados
         if 'Items' not in response or not response['Items']:
             return {
                 'statusCode': 404,
-                'body': json.dumps({'error': 'No cinemas found with the provided cinema_id and cinema_name'})
+                'body': json.dumps({'error': 'Sala not found'})
             }
 
-        # Responder con los detalles del cine específico
+        # Responder con los detalles de la sala encontrada
+        sala_details = response['Items'][0]  # Tomamos el primer elemento, ya que esperamos solo una sala
+
+        # Respuesta con los detalles de la sala
         return {
             'statusCode': 200,
-            'body': json.dumps(response['Items'])
+            'body': json.dumps({
+                'cinema_id': cinema_id,
+                'sala_id': sala_id,
+                'sala_details': sala_details  # Los detalles de la sala encontrada
+            })
         }
 
     except Exception as e:
