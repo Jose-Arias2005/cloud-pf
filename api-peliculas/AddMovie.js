@@ -12,7 +12,7 @@ exports.lambda_handler = async (event) => {
         const { user_id, cinema_id, title, genre, duration, rating } = body;
 
         // Validar entrada
-        const requiredFields = ['user_id', 'cinema_id', 'title', 'genre', 'duration', 'rating'];
+        const requiredFields = ['cinema_id', 'title', 'genre', 'duration', 'rating'];
         for (let field of requiredFields) {
             if (!body[field]) {
                 return {
@@ -20,24 +20,6 @@ exports.lambda_handler = async (event) => {
                     body: JSON.stringify({ error: `Falta el campo obligatorio: ${field}` }),
                 };
             }
-        }
-
-        // Conectar a la tabla de usuarios
-        const t_usuarios = process.env.TABLE_NAME_USUARIOS;
-        const userResponse = await dynamodb
-            .get({
-                TableName: t_usuarios,
-                Key: { user_id },
-            })
-            .promise();
-
-        if (!userResponse.Item || userResponse.Item.role !== 'admin' || userResponse.Item.cinema_id !== cinema_id) {
-            return {
-                statusCode: 403,
-                body: JSON.stringify({
-                    error: !userResponse.Item ? 'Permiso denegado' : 'El usuario no tiene acceso a este cine',
-                }),
-            };
         }
 
         // Conectar a la tabla de películas y verificar si ya existe la película
