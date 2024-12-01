@@ -4,7 +4,7 @@ service: api-peliculas
 
 provider:
   name: aws
-  runtime: nodejs18.x
+  runtime: nodejs14.x
   memorySize: 1024
   timeout: 29
   region: us-east-1
