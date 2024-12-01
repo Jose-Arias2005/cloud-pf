@@ -19,6 +19,8 @@ def lambda_handler(event, context):
                 'body': json.dumps({'error': 'Invalid JSON in body'})
             }
 
+
+    
     print("Cuerpo decodificado:", body)  # Depuración del cuerpo
 
     cinema_id = body.get('cinema_id')
