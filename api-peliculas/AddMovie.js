@@ -3,18 +3,18 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async (event) => {
     try {
-        // Parsear el body de la solicitud
-        const body = JSON.parse(event.body);
-        const { user_id, cinema_id, title, genre, duration, rating } = body;
+        const body = JSON.parse(event.body); // Parsear el body de la solicitud
+        const { user_id, cinema_id, title, genre, duration, rating} = body;  // Añadir cinema_id
 
-        // Validar que todos los campos requeridos estén presentes
+        // Validar entrada
         const requiredFields = ['user_id', 'cinema_id', 'title', 'genre', 'duration', 'rating'];
-        const missingField = requiredFields.find(field => !body[field]);
-        if (missingField) {
-            return {
+        for (let field of requiredFields) {
+            if (!body[field]) {
+                return {
                 statusCode: 400,
-                body: JSON.stringify({ error: `Falta el campo obligatorio: ${missingField}` }),
-            };
+                body: JSON.stringify({ error: Falta el campo obligatorio: ${field} }),
+                };
+            }
         }
 
         // Conectar a la tabla de usuarios
