@@ -23,39 +23,46 @@ def lambda_handler(event, context):
     else:
         body = event
 
-    # Ahora el cuerpo (body) está asegurado como un diccionario
-    # Obtener user_id
+    # Obtener user_id y cinema_id del cuerpo del evento
     user_id = body.get('user_id')
-    if not user_id:
+    cinema_id = body.get('cinema_id')  # Debes asegurarte de tener este campo en el body
+
+    if not user_id or not cinema_id:
         return {
             'statusCode': 400,
-            'body': json.dumps({'error': 'user_id is required'})
+            'body': json.dumps({'error': 'user_id and cinema_id are required'})
         }
 
-    # Verificar si el usuario existe en DynamoDB
-    user_response = t_usuarios.get_item(Key={'user_id': user_id})
+    # Buscar el usuario en la tabla 't_usuarios' usando la clave primaria compuesta
+    user_response = t_usuarios.get_item(
+        Key={
+            'cinema_id': cinema_id,  # Clave de partición
+            'user_id': user_id       # Clave de ordenación
+        }
+    )
+
     if 'Item' not in user_response or 'role' not in user_response['Item']:
         return {
             'statusCode': 403,
             'body': json.dumps({'error': 'User not found or role not defined'})
-        } 
+        }
 
     role = user_response['Item']['role']
-    
+
+    # Verificar si el usuario tiene permisos de admin
     if role != 'admin':
         return {
             'statusCode': 403,
             'body': json.dumps({'error': 'Permiso denegado'})
         }
 
-    # Obtener los datos del cine
-    cinema_id = body.get('cinema_id')
+    # Obtener los datos para crear el cine
     cinema_name = body.get('cinema_name')
     address = body.get('address')
     number_of_halls = body.get('number_of_halls')
 
     # Validación de entrada
-    if not cinema_id or not cinema_name or not address or not number_of_halls:
+    if not cinema_name or not address or not number_of_halls:
         return {
             'statusCode': 400,
             'body': json.dumps({'error': 'Missing required fields'})
@@ -69,7 +76,7 @@ def lambda_handler(event, context):
             'body': json.dumps({'error': 'Cinema already exists in this district'})
         }
 
-    # Agregar el cine a la base de datos
+    # Agregar el nuevo cine a la base de datos
     t_cines.put_item(
         Item={
             'cinema_id': cinema_id,
@@ -80,7 +87,10 @@ def lambda_handler(event, context):
         }
     )
 
+    # Respuesta exitosa
     return {
         'statusCode': 200,
-        'body': json.dumps({'message': 'Cinema created successfully'})
+        'body': json.dumps({
+            'message': 'Cinema created successfully'
+        })
     }
