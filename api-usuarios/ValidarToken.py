@@ -8,7 +8,7 @@ def lambda_handler(event, context):
 
         # Conectar a DynamoDB
         dynamodb = boto3.resource('dynamodb')
-        table = dynamodb.Table('t_tokens_acceso')
+        table = dynamodb.Table('t_token_acceso')
 
         # Obtener el token de la tabla
         response = table.get_item(
