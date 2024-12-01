@@ -2,75 +2,85 @@ import boto3
 import hashlib
 import json
 
-# Hashear contraseña
 def hash_password(password):
-    # Retorna la contraseña hasheada
+    # Hashear la contraseña con SHA256 (en producción sería mejor usar algo más robusto como bcrypt)
     return hashlib.sha256(password.encode()).hexdigest()
 
 def lambda_handler(event, context):
     try:
-        # Obtener el cinema_id, user_id y password del evento
-        cinema_id = event.get('cinema_id')
-        user_id = event.get('user_id')
-        password = event.get('password')
-        role = event.get('role', 'client')  # Por defecto 'client' si no se pasa
+        # Manejar diferentes formatos de entrada
+        if isinstance(event, str):
+            event = json.loads(event)
 
-        # Validar que cinema_id, user_id y password estén presentes
-        if not cinema_id or not user_id or not password:
+        # Si el evento tiene un body, tratar de decodificarlo
+        if 'body' in event:
+            try:
+                body = json.loads(event['body'])
+            except (json.JSONDecodeError, TypeError):
+                body = event['body'] if isinstance(event['body'], dict) else event
+        else:
+            body = event
+
+        # Obtener los valores necesarios para el login
+        cinema_id = body.get('cinema_id')
+        user_id = body.get('user_id')
+        password = body.get('password')
+
+        # Verificación de valores
+        if not all([cinema_id, user_id, password]):
             return {
                 'statusCode': 400,
-                'body': json.dumps({'error': 'Missing cinema_id, user_id, or password'})
+                'body': json.dumps({
+                    'error': 'Faltan cinema_id, user_id o password en la solicitud.'
+                })
             }
 
-        # Validar que el rol sea uno de los válidos
-        valid_roles = ['client', 'admin']
-        if role not in valid_roles:
-            return {
-                'statusCode': 400,
-                'body': json.dumps({'error': 'Invalid role. Must be "client" or "admin"'})
-            }
-
-        # Hashear la contraseña antes de almacenarla
-        hashed_password = hash_password(password)
-
-        # Conectar con DynamoDB
+        # Conectar a DynamoDB
         dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table('t_usuarios')
 
-        # Verificar si el usuario ya existe en la tabla de usuarios
+        # Verificar si el usuario existe en la base de datos
         response = table.get_item(
             Key={
-                'cinema_id': cinema_id,  # partition key
-                'user_id': user_id       # sort key
+                'cinema_id': cinema_id,  # Clave de partición
+                'user_id': user_id       # Clave de ordenación
             }
         )
 
-        if 'Item' in response:
+        if 'Item' not in response:
             return {
-                'statusCode': 409,
-                'body': json.dumps({'error': 'User already exists'})
+                'statusCode': 404,
+                'body': json.dumps({
+                    'error': 'Usuario no encontrado'
+                })
             }
 
-        # Almacenar los datos del usuario en la tabla de DynamoDB
-        table.put_item(
-            Item={
-                'cinema_id': cinema_id,
-                'user_id': user_id,
-                'password': hashed_password,
-                'role': role
-            }
-        )
+        # Recuperar la contraseña almacenada (hasheada)
+        stored_password = response['Item'].get('password')
 
-        # Retornar un mensaje de éxito
+        # Verificar si la contraseña proporcionada coincide con la almacenada
+        if stored_password != hash_password(password):
+            return {
+                'statusCode': 401,
+                'body': json.dumps({
+                    'error': 'Contraseña incorrecta'
+                })
+            }
+
+        # Respuesta exitosa
         return {
             'statusCode': 200,
-            'body': json.dumps({'message': 'User registered successfully', 'user_id': user_id})
+            'body': json.dumps({
+                'message': 'Login exitoso',
+                'role': response['Item'].get('role')
+            })
         }
 
     except Exception as e:
-        # Manejo de excepciones
-        print("Exception:", str(e))
+        # Manejo de errores
         return {
             'statusCode': 500,
-            'body': json.dumps({'error': 'Internal server error', 'details': str(e)})
+            'body': json.dumps({
+                'error': f'Ocurrió un error: {str(e)}'
+            })
         }
