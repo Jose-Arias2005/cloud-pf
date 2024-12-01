@@ -11,10 +11,9 @@ def lambda_handler(event, context):
         # Obtener identificadores clave
         cinema_id = event.get('cinema_id')
         cinema_name = event.get('cinema_name')
-        show_id = event.get('show_id')
 
         # Validar campos obligatorios
-        if not cinema_id or not cinema_name or not show_id:
+        if not cinema_id or not cinema_name:
             return {
                 'statusCode': 400,
                 'body': json.dumps({'error': 'cinema_id, cinema_name, and show_id are required'})
@@ -33,7 +32,6 @@ def lambda_handler(event, context):
             Key={
                 'cinema_id': cinema_id,
                 'cinema_name': cinema_name,
-                'show_id': show_id
             }
         )
         return {
