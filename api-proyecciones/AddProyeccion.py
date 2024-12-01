@@ -2,11 +2,12 @@ import boto3
 import json
 
 def lambda_handler(event, context):
-    dynamodb = boto3.resource('dynamodb')
-    t_proyecciones = dynamodb.Table('t_proyecciones')  # Tabla de proyecciones
-    t_usuarios = dynamodb.Table('t_usuarios')  # Tabla de usuarios
-    t_cines = dynamodb.Table('t_cines')  # Tabla de cines
-
+    try:
+        # Conectar a DynamoDB
+        dynamodb = boto3.resource('dynamodb')
+        t_proyecciones = dynamodb.Table('t_proyecciones')  # Tabla de proyecciones
+        t_usuarios = dynamodb.Table('t_usuarios')  # Tabla de usuarios
+        t_cines = dynamodb.Table('t_cines')  # Tabla de cines
 
         # Obtener datos de la proyección desde la solicitud
         cinema_id = event.get('cinema_id')
