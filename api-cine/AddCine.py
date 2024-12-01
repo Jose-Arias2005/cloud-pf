@@ -41,56 +41,61 @@ def lambda_handler(event, context):
         }
     )
 
-    if 'Item' not in user_response or 'role' not in user_response['Item']:
+    # Verificar si el usuario fue encontrado
+    if 'Item' not in user_response:
         return {
             'statusCode': 403,
-            'body': json.dumps({'error': 'User not found or role not defined'})
+            'body': json.dumps({'error': f'User with cinema_id: {cinema_id} and user_id: {user_id} not found'})
+        }
+
+    # Verificar si el campo 'role' está definido
+    if 'role' not in user_response['Item']:
+        return {
+            'statusCode': 403,
+            'body': json.dumps({'error': 'Role not defined for this user'})
         }
 
     role = user_response['Item']['role']
 
-    # Verificar si el usuario tiene permisos de admin
+    # Verificar si el rol es 'admin'
     if role != 'admin':
         return {
             'statusCode': 403,
-            'body': json.dumps({'error': 'Permiso denegado'})
+            'body': json.dumps({'error': 'Permiso denegado, solo el admin puede crear un cine'})
         }
 
-    # Obtener los datos para crear el cine
+    # Si llegamos aquí, el usuario es admin y el rol está definido
+    # Continuar con el proceso para crear el cine
     cinema_name = body.get('cinema_name')
     address = body.get('address')
     number_of_halls = body.get('number_of_halls')
 
-    # Validación de entrada
+    # Validación de entrada para el cine
     if not cinema_name or not address or not number_of_halls:
         return {
             'statusCode': 400,
-            'body': json.dumps({'error': 'Missing required fields'})
+            'body': json.dumps({'error': 'Missing required fields for cinema creation'})
         }
 
     # Verificar si el cine ya existe
-    existing_cinema = t_cines.get_item(Key={'cinema_id': cinema_id, 'cinema_name': cinema_name})
+    existing_cinema = t_cines.get_item(Key={'cinema_id': cinema_id})
     if 'Item' in existing_cinema:
         return {
             'statusCode': 409,
-            'body': json.dumps({'error': 'Cinema already exists in this district'})
+            'body': json.dumps({'error': 'Cinema already exists'})
         }
 
-    # Agregar el nuevo cine a la base de datos
+    # Agregar el cine a la tabla 't_cines'
     t_cines.put_item(
         Item={
             'cinema_id': cinema_id,
             'cinema_name': cinema_name,
             'address': address,
-            'number_of_halls': number_of_halls,
-            'created_at': str(int(time.time()))  # Timestamp de creación
+            'number_of_halls': number_of_halls
         }
     )
 
-    # Respuesta exitosa
     return {
         'statusCode': 200,
-        'body': json.dumps({
-            'message': 'Cinema created successfully'
-        })
+        'body': json.dumps({'message': 'Cinema created successfully'})
     }
