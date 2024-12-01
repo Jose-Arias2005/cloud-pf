@@ -20,12 +20,15 @@ def lambda_handler(event, context):
         start_time = event.get('start_time')
         end_time = event.get('end_time')
 
-        # Validar campos obligatorios
-        if not all([cinema_id, cinema_name, show_id, title, hall, date, start_time, end_time]):
+        # Verificar campos obligatorios
+        requiredFields = ['cinema_id', 'cinema_name', 'show_id', 'title', 'hall', 'date', 'start_time', 'end_time']
+        missing_fields = [field for field in requiredFields if not body.get(field)]
+        if missing_fields:
             return {
                 'statusCode': 400,
-                'body': json.dumps({'error': 'Missing required fields'})
+                'body': json.dumps({'error': f'Missing required fields: {", ".join(missing_fields)}'})
             }
+
 
         # Verificar si el cine existe
         cinema_response = t_cines.get_item(Key={'cinema_id': cinema_id, 'cinema_name': cinema_name})
