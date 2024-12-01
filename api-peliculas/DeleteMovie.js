@@ -10,8 +10,8 @@ exports.handler = async (event) => {
         for (let field of requiredFields) {
             if (!body[field]) {
                 return {
-                statusCode: 400,
-                body: JSON.stringify({ error: `Falta el campo obligatorio: ${field}` }),
+                    statusCode: 400,
+                    body: JSON.stringify({ error: `Falta el campo obligatorio: ${field}` }),
                 };
             }
         }
@@ -21,7 +21,7 @@ exports.handler = async (event) => {
         const userResponse = await dynamodb
             .get({
                 TableName: t_usuarios,
-                Key: { user_id },
+                Key: { cinema_id, user_id },  // Usamos cinema_id y user_id como claves
             })
             .promise();
 
