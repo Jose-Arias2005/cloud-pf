@@ -4,20 +4,21 @@ from boto3.dynamodb.conditions import Key
 
 def lambda_handler(event, context):
     try:
-        cinema_id = event.get('cinema_id')
+        # Obtener el cinema_id desde el cuerpo de la solicitud (body)
+        body = json.loads(event['body'])  # Asegúrate de parsear el body correctamente
+        cinema_id = body.get('cinema_id')  # Obtener cinema_id desde el cuerpo
+
         if not cinema_id:
             return {
                 'statusCode': 400,
                 'body': json.dumps({'error': 'Missing cinema_id in the request'})
             }
 
-
-        
         # Conectar con DynamoDB
         dynamodb = boto3.resource('dynamodb')
-        t_cines = dynamodb.Table('t_cines')  # Nombre dinámico de la tabla
+        t_cines = dynamodb.Table('t_cines')  # Nombre de la tabla de cines
 
-       # Consulta en la tabla principal con cinema_id como clave
+        # Consulta en la tabla principal con cinema_id como clave
         response = t_cines.query(
             KeyConditionExpression=Key('cinema_id').eq(cinema_id)
         )
