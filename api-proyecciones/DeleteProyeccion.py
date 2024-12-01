@@ -16,7 +16,7 @@ def lambda_handler(event, context):
         if not cinema_id or not cinema_name:
             return {
                 'statusCode': 400,
-                'body': json.dumps({'error': 'cinema_id, cinema_name, and show_id are required'})
+                'body': json.dumps({'error': 'cinema_id, cinema_name are required'})
             }
 
         # Verificar si el cine existe
