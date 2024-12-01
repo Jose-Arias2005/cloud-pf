@@ -15,7 +15,7 @@ def lambda_handler(event, context):
         show_id = event.get('show_id')
         title = event.get('title')
         hall = event.get('hall')
-        seats_available = event.get('seats_available', 50) 
+        seats_available = event.get(50) 
         date = event.get('date')
         start_time = event.get('start_time')
         end_time = event.get('end_time')
