@@ -1,10 +1,16 @@
 import boto3
 import hashlib
 import json
+import uuid  # Para generar un identificador único (UUID)
+import datetime
 
+# Función para hashear la contraseña
 def hash_password(password):
-    # Hashear la contraseña con SHA256 (en producción sería mejor usar algo más robusto como bcrypt)
     return hashlib.sha256(password.encode()).hexdigest()
+
+# Función para generar un token de acceso único (UUID)
+def generate_token():
+    return str(uuid.uuid4())  # Generamos un UUID único
 
 def lambda_handler(event, context):
     try:
@@ -67,20 +73,36 @@ def lambda_handler(event, context):
                 })
             }
 
-        # Respuesta exitosa
+        # Generar un token de acceso único
+        token = generate_token()
+
+        # Almacenar el token en la tabla t_tokens_acceso con la fecha de expiración
+        tokens_table = dynamodb.Table('t_tokens_acceso')
+        expiration_time = (datetime.datetime.utcnow() + datetime.timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')  # Expiración en 1 hora
+
+        tokens_table.put_item(
+            Item={
+                'token': token,         # El token generado
+                'user_id': user_id,     # ID del usuario
+                'cinema_id': cinema_id, # ID del cine
+                'expira_en': expiration_time  # Fecha de expiración del token
+            }
+        )
+
+        # Retornar el token al usuario
         return {
             'statusCode': 200,
             'body': json.dumps({
                 'message': 'Login exitoso',
-                'role': response['Item'].get('role')
+                'token': token  # El token generado
             })
         }
 
     except Exception as e:
-        # Manejo de errores
+        # Manejo de excepciones
         return {
             'statusCode': 500,
             'body': json.dumps({
-                'error': f'Ocurrió un error: {str(e)}'
+                'error': str(e)
             })
         }
