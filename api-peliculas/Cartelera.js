@@ -3,10 +3,11 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 exports.lambda_handler = async (event) => {
     try {
-        // Obtener el cinema_id desde el cuerpo de la solicitud (body)
-        const body = JSON.parse(event.body);
+        // Obtener el cinema_id desde el cuerpo de la solicitud
+        const body = JSON.parse(event.body);  // Asegúrate de que el cuerpo sea JSON
         const cinema_id = body.cinema_id;
-        
+
+        // Validar si el cinema_id está presente en el cuerpo
         if (!cinema_id) {
             return {
                 statusCode: 400,
@@ -23,7 +24,7 @@ exports.lambda_handler = async (event) => {
             ExpressionAttributeValues: {
                 ':cinema_id': cinema_id
             },
-            ExclusiveStartKey: event.queryStringParameters?.lastEvaluatedKey || null,  // Paginación
+            ExclusiveStartKey: event.queryStringParameters?.lastEvaluatedKey || null,  // Paginación si es necesario
         };
 
         const response = await dynamodb.query(params).promise();
