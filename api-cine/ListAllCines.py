@@ -10,6 +10,8 @@ def lambda_handler(event, context):
                 'statusCode': 400,
                 'body': json.dumps({'error': 'Missing cinema_id in the request'})
             }
+
+
         
         # Conectar con DynamoDB
         dynamodb = boto3.resource('dynamodb')
