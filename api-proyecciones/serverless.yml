@@ -1,0 +1,45 @@
+org: jorgeleandro
+service: api-proyecciones
+
+provider:
+  name: aws
+  runtime: python3.12
+  memorySize: 1024
+  timeout: 29
+  region: us-east-1
+  iam:
+    role: arn:aws:iam::880764721962:role/LabRole
+  environment:
+    TABLE_NAME_USUARIOS: t_usuarios
+    TABLE_NAME_CINES: t_cines
+    TABLE_NAME_CARTELERA: t_cartelera
+    TABLE_NAME_PELICULAS: t_peliculas
+    TABLE_NAME_PROYECCIONES: t_proyecciones
+
+functions:
+  AddProyection:
+    handler: AddProyection.lambda_handler
+    events:
+      - http:
+          path: /proyecciones/agregar
+          method: post
+          cors: true
+          integration: lambda
+
+  UpdateProyection:
+    handler: UpdateProyection.lambda_handler
+    events:
+      - http:
+          path: /proyecciones/actualizar
+          method: put
+          cors: true
+          integration: lambda
+
+  DeleteProyection:
+    handler: DeleteProyection.lambda_handler
+    events:
+      - http:
+          path: /proyecciones/eliminar
+          method: delete
+          cors: true
+          integration: lambda
