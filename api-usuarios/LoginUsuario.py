@@ -76,10 +76,13 @@ def lambda_handler(event, context):
         # Generar un token de acceso único
         token = generate_token()
 
-        # Almacenar el token en la tabla t_tokens_acceso con la fecha de expiración
-        tokens_table = dynamodb.Table('t_tokens_acceso')
+        # Conectar a la tabla t_token_acceso (corrige el nombre aquí)
+        tokens_table = dynamodb.Table('t_token_acceso')  # Asegúrate de usar el nombre correcto
+
+        # Expiración del token: 1 hora
         expiration_time = (datetime.datetime.utcnow() + datetime.timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')  # Expiración en 1 hora
 
+        # Almacenar el token en la tabla t_token_acceso
         tokens_table.put_item(
             Item={
                 'token': token,         # El token generado
