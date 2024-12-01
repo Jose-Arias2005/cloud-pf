@@ -1,4 +1,4 @@
-org: jorgeleandro
+org: culmi05
 service: tablas
 
 provider:
@@ -8,7 +8,7 @@ provider:
   timeout: 29
   region: us-east-1
   iam:
-    role: arn:aws:iam::880764721962:role/LabRole
+    role: arn:aws:iam::637458465934:role/LabRole
   environment:
     TABLE_NAME_USUARIOS: t_usuarios
     TABLE_NAME_CINES: t_cines
