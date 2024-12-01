@@ -4,9 +4,9 @@ from boto3.dynamodb.conditions import Key
 
 def lambda_handler(event, context):
     try:
-        # Obtener el cinema_id desde el cuerpo de la solicitud (body)
-        body = json.loads(event['body'])  # Asegúrate de parsear el body correctamente
-        cinema_id = body.get('cinema_id')  # Obtener cinema_id desde el cuerpo
+        # El cuerpo de la solicitud ya es un diccionario, no necesitas json.loads() 
+        body = event['body']  # Directamente tomamos el body que es un dict
+        cinema_id = body.get('cinema_id')  # Obtener el cinema_id desde el body
 
         if not cinema_id:
             return {
