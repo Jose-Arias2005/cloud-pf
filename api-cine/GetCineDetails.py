@@ -5,8 +5,13 @@ from boto3.dynamodb.conditions import Key
 def lambda_handler(event, context):
     try:
         # Obtener cinema_id y cinema_name desde la solicitud
-        cinema_id = event.get('cinema_id')
-        cinema_name = event.get('cinema_name')
+        body = event.get('body')
+        if isinstance(body, str):  # Si el body es un string, decodificarlo
+            body = json.loads(body)
+
+        cinema_id = body.get('cinema_id')
+        cinema_name = body.get('cinema_name')
+        
         if not cinema_id or not cinema_name:
             return {
                 'statusCode': 400,
@@ -26,7 +31,7 @@ def lambda_handler(event, context):
         if 'Items' not in response or not response['Items']:
             return {
                 'statusCode': 404,
-                'body': json.dumps({'error': 'No hay cines en este distrito'})
+                'body': json.dumps({'error': 'No cines found with the provided cinema_id and cinema_name'})
             }
 
         # Responder con los detalles del cine específico
