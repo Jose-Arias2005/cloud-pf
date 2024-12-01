@@ -102,12 +102,10 @@ resources:
             AttributeType: "S"  # Para filtrar por show_id
         KeySchema:
           - AttributeName: "cinema_id"
-            KeyType: "HASH"  # Partition key
+            KeyType: "HASH"
           - AttributeName: "cinema_name"
-            KeyType: "RANGE" # Sort key
-        BillingMode: PAY_PER_REQUEST  # No provisioned throughput, usando "on-demand"
-
-        # Índice Global Secundario (GSI) para filtrar por show_id
+            KeyType: "RANGE"
+        BillingMode: PAY_PER_REQUEST
         GlobalSecondaryIndexes:
           - IndexName: "ShowIdIndex"
             KeySchema:
