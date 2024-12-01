@@ -17,6 +17,7 @@ exports.handler = async (event) => {
             }
         }
 
+        
         // Conectar a la tabla de usuarios
         const t_usuarios = process.env.TABLE_NAME_USUARIOS;
         const userResponse = await dynamodb
