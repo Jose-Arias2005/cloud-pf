@@ -3,7 +3,7 @@ service: api-reserva
 
 provider:
   name: aws
-  runtime: nodejs22.x
+  runtime: nodejs14.x
   memorySize: 1024
   timeout: 29
   region: us-east-1
@@ -19,7 +19,7 @@ provider:
 functions:
   # api-reserva (Node.js)
   ReserveSeats:
-    handler: ReserveSeats.reservarAsientos
+    handler: ReserveSeats.lambda_handler
     events:
       - http:
           path: /pelicula/reservar
