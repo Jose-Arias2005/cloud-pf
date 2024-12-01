@@ -2,32 +2,54 @@ import boto3
 from datetime import datetime
 
 def lambda_handler(event, context):
-    # Entrada (json)
-    token = event['token']
-    # Proceso
-    dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('t_tokens_acceso')
-    response = table.get_item(
-        Key={
-            'token': token
-        }
-    )
-    if 'Item' not in response:
-        return {
-            'statusCode': 403,
-            'body': 'Token no existe'
-        }
-    else:
-        expires = response['Item']['expires']
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        # Obtener el token del evento
+        token = event.get('token')
+
+        # Conectar a DynamoDB
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table('t_tokens_acceso')
+
+        # Obtener el token de la tabla
+        response = table.get_item(
+            Key={
+                'token': token  # Buscamos por el token
+            }
+        )
+
+        # Si el token no existe
+        if 'Item' not in response:
+            return {
+                'statusCode': 403,
+                'body': json.dumps('Token no existe')
+            }
+
+        # Recuperar la fecha de expiración almacenada
+        expires_str = response['Item']['expira_en']
+
+        # Convertir la fecha de expiración de string a datetime
+        expires = datetime.strptime(expires_str, '%Y-%m-%d %H:%M:%S')
+
+        # Obtener la fecha y hora actuales
+        now = datetime.now()
+
+        # Comparar la fecha de expiración con la fecha actual
         if now > expires:
             return {
                 'statusCode': 403,
-                'body': 'Token expirado'
+                'body': json.dumps('Token expirado')
             }
-    
-    # Salida (json)
-    return {
-        'statusCode': 200,
-        'body': 'Token válido'
-    }
+
+        # Si el token es válido
+        return {
+            'statusCode': 200,
+            'body': json.dumps('Token válido')
+        }
+
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({
+                'error': str(e)
+            })
+        }
