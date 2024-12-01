@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
+
 exports.lambda_handler = async (event) => {
     try {
         // Verifica si el cuerpo está en formato JSON o ya es un objeto
