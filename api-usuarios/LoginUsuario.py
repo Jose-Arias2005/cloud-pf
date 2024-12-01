@@ -3,6 +3,7 @@ import hashlib
 import json
 import jwt  # Necesitas instalar la librería pyjwt: 'pip install pyjwt'
 import datetime
+import uuid  # Para generar un ID único para cada token
 
 # Función para hashear la contraseña (mejor usar algo más seguro como bcrypt en producción)
 def hash_password(password):
@@ -78,7 +79,7 @@ def lambda_handler(event, context):
         stored_password = response['Item'].get('password')
 
         # Verificar si la contraseña proporcionada coincide con la almacenada
-        if stored_password != hash_password(password):
+        if hash_password(password) != stored_password:
             return {
                 'statusCode': 401,
                 'body': json.dumps({
@@ -86,30 +87,37 @@ def lambda_handler(event, context):
                 })
             }
 
-        # Generar un token JWT
+        # Generar el token JWT
         token = generate_jwt_token(user_id, cinema_id)
 
-        # Almacenar el token en la tabla t_tokens_acceso
+        # Generar un ID único para el token
+        token_id = str(uuid.uuid4())  # Generar un token_id único
+
+        # Conectar a la tabla t_tokens_acceso para guardar el token generado
         tokens_table = dynamodb.Table('t_tokens_acceso')
+
+        # Almacenar el token en DynamoDB
         tokens_table.put_item(
             Item={
-                'user_id': user_id,
-                'cinema_id': cinema_id,
-                'token': token,
+                'token_id': token_id,  # ID único del token
+                'token': token,        # El token JWT generado
+                'user_id': user_id,    # ID del usuario
+                'cinema_id': cinema_id, # ID del cine
                 'expira_en': str(datetime.datetime.utcnow() + datetime.timedelta(hours=1))  # Fecha de expiración
             }
         )
 
-        # Retornar el token al usuario
+        # Devolver el token al usuario
         return {
             'statusCode': 200,
             'body': json.dumps({
                 'message': 'Login exitoso',
-                'token': token
+                'token': token  # El token JWT que el usuario utilizará
             })
         }
 
     except Exception as e:
+        # Capturar cualquier error inesperado
         return {
             'statusCode': 500,
             'body': json.dumps({
