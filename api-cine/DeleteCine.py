@@ -15,7 +15,14 @@ def lambda_handler(event, context):
         }
     
     # Consultar el rol del usuario
-    user_response = t_usuarios.get_item(Key={'user_id': user_id})
+    try:
+        user_response = t_usuarios.get_item(Key={'user_id': user_id})
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'error': f'Error querying user data: {str(e)}'})
+        }
+    
     if 'Item' not in user_response or 'role' not in user_response['Item']:
         return {
             'statusCode': 403,
@@ -31,7 +38,7 @@ def lambda_handler(event, context):
             'body': json.dumps({'error': 'Permission denied'})
         }
     
-    # Obtener cinema_id y district directamente del evento
+    # Obtener cinema_id y cinema_name directamente del evento
     cinema_id = event.get('cinema_id')
     cinema_name = event.get('cinema_name')
     
@@ -41,12 +48,34 @@ def lambda_handler(event, context):
             'statusCode': 400,
             'body': json.dumps({'error': 'cinema_id and cinema_name are required'})
         }
+
+    # Verificar si el cine existe antes de eliminar
+    try:
+        existing_cinema = t_cines.get_item(
+            Key={'cinema_id': cinema_id, 'cinema_name': cinema_name}
+        )
+        if 'Item' not in existing_cinema:
+            return {
+                'statusCode': 404,
+                'body': json.dumps({'error': 'Cinema not found'})
+            }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'error': f'Error checking cinema existence: {str(e)}'})
+        }
     
     # Eliminar el cine
-    t_cines.delete_item(
-        Key={'cinema_id': cinema_id, 'cinema_name': cinema_name}
-    )
-    
+    try:
+        t_cines.delete_item(
+            Key={'cinema_id': cinema_id, 'cinema_name': cinema_name}
+        )
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'error': f'Error deleting cinema: {str(e)}'})
+        }
+
     return {
         'statusCode': 200,
         'body': json.dumps({'message': 'Cinema deleted successfully'})
