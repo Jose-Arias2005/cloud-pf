@@ -17,7 +17,7 @@ provider:
 
 functions:
   AddMovie:
-    handler: Addmovie.addMovie
+    handler: AddMovie.handler  # Asegúrate de que el handler esté correctamente definido
     events:
       - http:
           path: /pelicula/agregar
@@ -26,7 +26,7 @@ functions:
           integration: lambda
 
   UpdateMovie:
-    handler: Updatemovie.updateMovie
+    handler: UpdateMovie.handler  # Asegúrate de que el handler esté correctamente definido
     events:
       - http:
           path: /pelicula/actualizar
@@ -35,7 +35,7 @@ functions:
           integration: lambda
 
   DeleteMovie:
-    handler: Deletemovie.deleteMovie
+    handler: DeleteMovie.handler  # Asegúrate de que el handler esté correctamente definido
     events:
       - http:
           path: /pelicula/eliminar
@@ -44,7 +44,7 @@ functions:
           integration: lambda
     
   Cartelera:
-    handler: Cartelera.cartelera
+    handler: Cartelera.handler  # Asegúrate de que el handler esté correctamente definido
     events:
       - http:
           path: /pelicula/{cinema_id}
