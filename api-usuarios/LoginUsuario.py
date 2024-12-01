@@ -1,10 +1,29 @@
 import boto3
 import hashlib
 import json
+import jwt  # Necesitas instalar la librería pyjwt: 'pip install pyjwt'
+import datetime
 
+# Función para hashear la contraseña (mejor usar algo más seguro como bcrypt en producción)
 def hash_password(password):
-    # Hashear la contraseña con SHA256 (en producción sería mejor usar algo más robusto como bcrypt)
     return hashlib.sha256(password.encode()).hexdigest()
+
+# Función para generar un token JWT
+def generate_jwt_token(user_id, cinema_id):
+    # Definir la clave secreta (debe estar segura y no debe ser pública)
+    secret_key = 'mi_clave_secreta'  # Usa una clave segura en producción
+    expiration_time = datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Expira en 1 hora
+
+    # Crear el payload del token
+    payload = {
+        'user_id': user_id,
+        'cinema_id': cinema_id,
+        'exp': expiration_time  # Fecha de expiración
+    }
+
+    # Generar el token JWT
+    token = jwt.encode(payload, secret_key, algorithm='HS256')
+    return token
 
 def lambda_handler(event, context):
     try:
@@ -67,20 +86,33 @@ def lambda_handler(event, context):
                 })
             }
 
-        # Respuesta exitosa
+        # Generar un token JWT
+        token = generate_jwt_token(user_id, cinema_id)
+
+        # Almacenar el token en la tabla t_tokens_acceso
+        tokens_table = dynamodb.Table('t_tokens_acceso')
+        tokens_table.put_item(
+            Item={
+                'user_id': user_id,
+                'cinema_id': cinema_id,
+                'token': token,
+                'expira_en': str(datetime.datetime.utcnow() + datetime.timedelta(hours=1))  # Fecha de expiración
+            }
+        )
+
+        # Retornar el token al usuario
         return {
             'statusCode': 200,
             'body': json.dumps({
                 'message': 'Login exitoso',
-                'role': response['Item'].get('role')
+                'token': token
             })
         }
 
     except Exception as e:
-        # Manejo de errores
         return {
             'statusCode': 500,
             'body': json.dumps({
-                'error': f'Ocurrió un error: {str(e)}'
+                'error': str(e)
             })
         }
