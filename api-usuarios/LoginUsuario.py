@@ -18,6 +18,8 @@ def lambda_handler(event, context):
         if isinstance(event, str):
             event = json.loads(event)
 
+
+        
         # Si el evento tiene un body, tratar de decodificarlo
         if 'body' in event:
             try:
