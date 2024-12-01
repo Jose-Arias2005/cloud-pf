@@ -10,18 +10,15 @@ def lambda_handler(event, context):
     print("Evento recibido:", event)
 
     # Si el evento tiene un body y es un string, convertirlo a diccionario
-    if 'body' in event:
-        body = event['body']
-        if isinstance(body, str):  # Si el body es un string, decodificarlo
-            try:
-                body = json.loads(body)
-            except json.JSONDecodeError:
-                return {
-                    'statusCode': 400,
-                    'body': json.dumps({'error': 'Invalid JSON in body'})
-                }
-    else:
-        body = event
+    body = event.get('body')
+    if isinstance(body, str):  # Si el body es un string, decodificarlo
+        try:
+            body = json.loads(body)
+        except json.JSONDecodeError:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'error': 'Invalid JSON in body'})
+            }
 
     # Obtener user_id y cinema_id del cuerpo del evento
     user_id = body.get('user_id')
@@ -34,12 +31,18 @@ def lambda_handler(event, context):
         }
 
     # Buscar el usuario en la tabla 't_usuarios' usando la clave primaria compuesta
-    user_response = t_usuarios.get_item(
-        Key={
-            'cinema_id': cinema_id,  # Clave de partición
-            'user_id': user_id       # Clave de ordenación
+    try:
+        user_response = t_usuarios.get_item(
+            Key={
+                'cinema_id': cinema_id,  # Clave de partición
+                'user_id': user_id       # Clave de ordenación
+            }
+        )
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'error': f'Error accessing DynamoDB: {str(e)}'})
         }
-    )
 
     # Verificar si el usuario fue encontrado
     if 'Item' not in user_response:
@@ -49,13 +52,12 @@ def lambda_handler(event, context):
         }
 
     # Verificar si el campo 'role' está definido
-    if 'role' not in user_response['Item']:
+    role = user_response['Item'].get('role')
+    if not role:
         return {
             'statusCode': 403,
             'body': json.dumps({'error': 'Role not defined for this user'})
         }
-
-    role = user_response['Item']['role']
 
     # Verificar si el rol es 'admin'
     if role != 'admin':
@@ -86,14 +88,20 @@ def lambda_handler(event, context):
         }
 
     # Agregar el cine a la tabla 't_cines'
-    t_cines.put_item(
-        Item={
-            'cinema_id': cinema_id,
-            'cinema_name': cinema_name,
-            'address': address,
-            'number_of_halls': number_of_halls
+    try:
+        t_cines.put_item(
+            Item={
+                'cinema_id': cinema_id,
+                'cinema_name': cinema_name,
+                'address': address,
+                'number_of_halls': number_of_halls
+            }
+        )
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'error': f'Error adding cinema: {str(e)}'})
         }
-    )
 
     return {
         'statusCode': 200,
