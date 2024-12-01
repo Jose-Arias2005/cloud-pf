@@ -1,11 +1,15 @@
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-// Asegúrate de que se exporte la función lambda_handler
-exports.lambda_handler = async (event) => {  // Asegúrate de que sea "exports.lambda_handler"
+exports.lambda_handler = async (event) => {
     try {
-        const body = JSON.parse(event.body); // Parsear el body de la solicitud
-        const { user_id, cinema_id, title, genre, duration, rating } = body;  // Añadir cinema_id
+        // Verifica si el cuerpo está en formato JSON o ya es un objeto
+        let body = event.body;
+        if (typeof body === 'string') {
+            body = JSON.parse(body); // Si es una cadena, parsearlo
+        }
+
+        const { user_id, cinema_id, title, genre, duration, rating } = body;
 
         // Validar entrada
         const requiredFields = ['user_id', 'cinema_id', 'title', 'genre', 'duration', 'rating'];
