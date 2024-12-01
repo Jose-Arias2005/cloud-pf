@@ -5,9 +5,20 @@ def lambda_handler(event, context):
     dynamodb = boto3.resource('dynamodb')
     t_cines = dynamodb.Table('t_cines')
     t_usuarios = dynamodb.Table('t_usuarios')
-    
-    # Obtener user_id
-    user_id = event.get('user_id')
+
+    # Obtener el cuerpo del evento y decodificarlo si es un string
+    body = event.get('body')
+    if isinstance(body, str):  # Si el body es un string, decodificarlo
+        try:
+            body = json.loads(body)
+        except json.JSONDecodeError:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'error': 'Invalid JSON in body'})
+            }
+
+    # Obtener user_id desde el cuerpo del evento
+    user_id = body.get('user_id')
     if not user_id:
         return {
             'statusCode': 400,
@@ -16,13 +27,13 @@ def lambda_handler(event, context):
     
     # Consultar el rol del usuario
     try:
-        user_response = t_usuarios.get_item(Key={'user_id': user_id})
+        user_response = t_usuarios.get_item(Key={'user_id': user_id})  # Verificar si la tabla usa solo user_id
     except Exception as e:
         return {
             'statusCode': 500,
             'body': json.dumps({'error': f'Error querying user data: {str(e)}'})
         }
-    
+
     if 'Item' not in user_response or 'role' not in user_response['Item']:
         return {
             'statusCode': 403,
@@ -37,10 +48,10 @@ def lambda_handler(event, context):
             'statusCode': 403,
             'body': json.dumps({'error': 'Permission denied'})
         }
-    
+
     # Obtener cinema_id y cinema_name directamente del evento
-    cinema_id = event.get('cinema_id')
-    cinema_name = event.get('cinema_name')
+    cinema_id = body.get('cinema_id')
+    cinema_name = body.get('cinema_name')
     
     # Validación de entrada
     if not cinema_id or not cinema_name:
@@ -64,7 +75,7 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps({'error': f'Error checking cinema existence: {str(e)}'})
         }
-    
+
     # Eliminar el cine
     try:
         t_cines.delete_item(
