@@ -1,6 +1,7 @@
 org: culmi05
 service: api-peliculas
 
+
 provider:
   name: aws
   runtime: nodejs22.x
