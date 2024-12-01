@@ -3,7 +3,7 @@ service: api-visitas
 
 provider:
   name: aws
-  runtime: nodejs22.x
+  runtime: nodejs14.x
   memorySize: 1024
   timeout: 29
   region: us-east-1
@@ -16,7 +16,7 @@ provider:
 functions: 
   #api-visitas (Node.js)
   GetHistorialVisita:
-      handler: GetHistorialVisita.getHistorialVisita
+      handler: GetHistorialVisita.lambda_handler
       events:
         - http:
             path: /visitas/historial
@@ -25,7 +25,7 @@ functions:
             integration: lambda
 
   GetVisitaEspecifica:
-    handler: GetVisitaEspecifica.GetVisitaEspecifica
+    handler: GetVisitaEspecifica.lambda_handler
     events:
       - http:
           path: /visitas/detalle
@@ -34,7 +34,7 @@ functions:
           integration: lambda
 
   VisitaPorFecha:
-    handler: CompraFecha.compraFecha
+    handler: CompraFecha.lambda_handler
     events:
       - http:
           path: /visitas/filtrar
