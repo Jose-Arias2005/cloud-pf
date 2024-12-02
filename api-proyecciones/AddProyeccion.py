@@ -9,6 +9,8 @@ def lambda_handler(event, context):
         t_usuarios = dynamodb.Table('t_usuarios')  # Tabla de usuarios
         t_cines = dynamodb.Table('t_cines')  # Tabla de cines
 
+
+        
         # Obtener datos de la proyección desde la solicitud
         body = event.get('body')
         if isinstance(body, str):
